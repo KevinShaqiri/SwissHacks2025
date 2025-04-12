@@ -145,5 +145,5 @@ if __name__ == "__main__":
     with open(output_json, 'w') as json_file:
         json.dump(form_data_dict, json_file, indent=4)
     
-    flatten_pdf_with_fitx(input_pdf, output_pdf)
+    # flatten_pdf_with_fitx(input_pdf, output_pdf)
     exit(0)

@@ -6,6 +6,22 @@ def compare_profile_account(profile_docx: dict, account_opening_pdf: dict) -> bo
     Compare common/derived fields from two JSONs.
     Returns True if all common fields are consistent, else False.
     """
+    def normalize(d: dict) -> dict:
+        normalized = {}
+        for k, v in d.items():
+            if isinstance(k, str):
+                new_key = k.lower().strip()
+            else:
+                new_key = k
+            if isinstance(v, str):
+                normalized[new_key] = v.strip()
+            else:
+                normalized[new_key] = v
+        return normalized
+
+    profile = normalize(profile_docx)
+    pdf = normalize(account_opening_pdf)
+
     consistent = True
     
     # Mapping for directly comparable fields: key in profile_docx -> equivalent key in account_opening_pdf.

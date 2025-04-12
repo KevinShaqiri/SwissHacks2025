@@ -122,11 +122,11 @@ def extract_signature_from_png_cv(png_path, output_path):
 
 def main():
     # Set the input files
-    png_path = "image.png"
-    pdf_path = "account.pdf"
+    png_path = "./data/passport.png"
+    pdf_path = "./data/account_opening.pdf"
     
     # Create output directory
-    output_dir = "extracted_signatures"
+    output_dir = "./data/extracted_signatures"
     os.makedirs(output_dir, exist_ok=True)
     
     # Output file paths

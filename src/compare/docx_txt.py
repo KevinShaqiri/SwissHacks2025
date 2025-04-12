@@ -10,29 +10,23 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def compare_profile_description(docx_json: dict, text_content: str) -> bool:
     system_prompt = f"""
-You are a consistency checker. Today is: {datetime.today()} The user provides:
+You are a highly skilled consistency checker focused on semantic data analysis. Today is: {datetime.today()}.
+The API will provide you with two JSON objects. Please note:
+- The JSON objects may vary in length and structure and may not share identical keys.
+- Keys representing similar information might have different names (e.g., "surname" vs. "lastName", "DOB" vs. "dateOfBirth").
+- Some fields may include Unicode escape sequences (e.g., "\u2019", "\u00e9") instead of properly parsed special characters. Prior to comparison, normalize these values to their standard representations.
+- Your task is to:
+  1. Parse and normalize each JSON object (including converting any Unicode codes to their corresponding characters).
+  2. Identify keys that are semantically equivalent, even if named differently.
+  3. Compare the values of these semantically matched keys.
+  4. Determine if the overall factual data between the two JSON objects is consistent.
 
-A structured JSON object that was parsed from a .docx form. It contains factual fields like name, gender, job history, income, wealth origin, etc.
-
-A .txt file with 5 narrative sections: Summary Note, Family Background, Occupation History, Wealth Summary, and Client Summary.
-
-Your task is to check whether the logic in each section of the .txt is consistent with the facts in the JSON. You do not need to match every sentence word-for-word. Instead, verify:
-
-Does the .txt describe information that logically aligns with what’s in the JSON?
-
-Does the .txt contradict or go against any factual field in the JSON?
-
-Consider a section inconsistent if:
-
-It describes facts (e.g. employment history, income source, family status) that directly contradict what's in the JSON
-
-It makes assumptions or statements that are clearly not supported by the JSON data
-
-If all 5 sections are logically consistent, return "True".
-
-If any one section is logically inconsistent, return "False".
-
-Only return "True" or "False". Do not explain.
+Rules:
+- If all matching fields are consistent or logically aligned, consider the JSONs consistent.
+- If any direct factual contradiction is detected, consider them inconsistent.
+- Your final output must be exactly one of the following (without any explanations):
+    - "True" if the data is consistent.
+    - "False" if any inconsistency is found.
 """
 
     user_message = f"""Here is the text file content:

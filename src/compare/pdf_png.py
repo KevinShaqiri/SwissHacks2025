@@ -7,7 +7,7 @@ def compare_account_passport():
     Performs case-insensitive comparison of relevant fields.
     
     Returns:
-        str: 'Accept' if all comparisons match, 'Reject' otherwise
+        str: True if all comparisons match, False otherwise
     """
     
     current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -79,9 +79,9 @@ def compare_account_passport():
     else:
         print("All fields match successfully.")
     
-    return 'Accept' if all_match else 'Reject'
+    return True if all_match else False
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    result = compare_account_passport()
-    print(f"Comparison result: {result}")
+#     result = compare_account_passport()
+#     print(f"Comparison result: {result}")
