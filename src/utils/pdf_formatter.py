@@ -137,10 +137,13 @@ def flatten_pdf_with_fitx(input_pdf_path, output_pdf_path):
 if __name__ == "__main__":
     input_pdf = os.path.join("data", "account_opening.pdf")
     output_pdf = os.path.join("data", "account_opening_flat.pdf")
+    output_json = os.path.join("data", "account_opening_pdf.json")
     
     form_data_dict = extract_pdf_form_data(input_pdf)
     
-    print(json.dumps(form_data_dict))
+    # Save the dictionary to a JSON file
+    with open(output_json, 'w') as json_file:
+        json.dump(form_data_dict, json_file, indent=4)
     
     flatten_pdf_with_fitx(input_pdf, output_pdf)
     exit(0)
