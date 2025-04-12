@@ -33,6 +33,7 @@ def extract_passport_data(image_path):
         "Code":"value",
         "Passport_number":"value",
         "Surname":"value",
+        "First_name":"value",
         "Birth_date":"value",
         "Citizenship_english":"value",
         "Citizenship_native":"value",
