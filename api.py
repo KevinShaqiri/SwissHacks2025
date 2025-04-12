@@ -2,6 +2,8 @@ import requests
 import os
 import json
 import base64
+# from src.parse_docx import 
+# from src.docx_txt
 
 base_url = 'https://hackathon-api.mlo.sehlat.io'
 
@@ -25,7 +27,7 @@ def write_files(res: dict):
                 file.write(base64.b64decode(value))
 
         elif key == "account":
-            with open('./data/account_form.pdf', 'wb') as file:
+            with open('./data/account_opening.pdf', 'wb') as file:
                 file.write(base64.b64decode(value))
         else:
             print(f"Unexpected file format: {key}, saving failed.")
@@ -106,16 +108,12 @@ def main():
     session_id, client_id = start_session()
     status = "success"
     score = 0
-    while (status != "gameover") and (status != None):
-        client_id, score, status = make_prediction(session_id, client_id, "Accept")
-
+    # while (status != "gameover") and (status != None):
+    client_id, score, status = make_prediction(session_id, client_id, "Accept")
+    
     print(f"The score reached is {score}")
 
 
 if __name__ == '__main__':
 
-    main()
-
-
-
-            
+    main()  
