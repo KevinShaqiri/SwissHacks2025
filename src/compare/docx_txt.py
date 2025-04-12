@@ -2,14 +2,15 @@ from dotenv import load_dotenv
 import os
 from openai import OpenAI
 import json
+from datetime import datetime
 
 # Load env variables
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def compare_docx_txt(docx_json: dict, text_content: str) -> bool:
-    system_prompt = """
-You are a consistency checker. The user provides:
+    system_prompt = f"""
+You are a consistency checker. Today is: {datetime.today()} The user provides:
 
 A structured JSON object that was parsed from a .docx form. It contains factual fields like name, gender, job history, income, wealth origin, etc.
 
