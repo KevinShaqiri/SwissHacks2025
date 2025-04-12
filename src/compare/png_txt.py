@@ -8,7 +8,7 @@ from datetime import datetime
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def compare_docx_txt(docx_json: dict, text_content: str) -> bool:
+def compare_profile_description(docx_json: dict, text_content: str) -> bool:
     system_prompt = f"""
 You are a consistency checker. Today is: {datetime.today()}.
 
@@ -18,7 +18,7 @@ The user provides:
 2. A text document (.txt) that contains narrative or descriptive content which may reference this data.
 
 Your task is to say whether the data in the files are consistent among one other. 
-If yes, return True, if no return False. Don't explane
+If yes, return True, if no return False. Don't explain.
 
 """
 
@@ -53,5 +53,5 @@ if __name__ == "__main__":
     with open("./data/passport_png.json", "r", encoding="utf-8") as f:
         png_json = json.load(f)
 
-    result = compare_docx_txt(png_json, txt)
+    result = compare_profile_description(png_json, txt)
     print("Answer:", result)

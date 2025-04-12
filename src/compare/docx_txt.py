@@ -8,7 +8,7 @@ from datetime import datetime
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def compare_docx_txt(docx_json: dict, text_content: str) -> bool:
+def compare_profile_description(docx_json: dict, text_content: str) -> bool:
     system_prompt = f"""
 You are a consistency checker. Today is: {datetime.today()} The user provides:
 
@@ -66,5 +66,5 @@ if __name__ == "__main__":
     with open("./data/profile_docx.json", "r", encoding="utf-8") as f:
         docx_json = json.load(f)
 
-    result = compare_docx_txt(docx_json, txt)
+    result = compare_profile_description(docx_json, txt)
     print("Consistent:", result)
