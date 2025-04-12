@@ -3,7 +3,7 @@ import os
 from openai import OpenAI
 import json
 from datetime import datetime
-
+import re
 # Load env variables
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -33,12 +33,10 @@ Your task is to:
 Rules:
 - If every factual field in the JSON aligns with the narrative and no contradictions are found, output "True".
 - If any part of the text contradicts a field in the JSON, output "False".
-- Your final output must be exactly one of the following:
-    - "True" if the data is consistent. No explanation
-    - "False" if any inconsistency is found. Output the exact comparison that you made
-
-
-
+- Reason about why you made such decision, clearly outlying whether there is a contradiction or not. 
+- Your final output (the content) must be EXACTLY one of the following:
+    - "True" if the data is consistent. 
+    - "False" if any inconsistency is found.
 """
 
     user_message = f"""Here is the text file content:
@@ -63,7 +61,12 @@ And here is the parsed JSON:
     elif content.lower() == "false":
         return False
     else:
-        return(f"OpenAI outputed: {content}")
+        decision = re.sub(r'[^A-Za-z]', '', content.split()[-1])
+        if decision == "True":
+            return True
+        else:
+            return False
+        # raise ValueError(f"Unexpected answer from OpenAI: {content}")
 
 if __name__ == "__main__":
     with open("./data/description.txt", "r", encoding="utf-8") as f:

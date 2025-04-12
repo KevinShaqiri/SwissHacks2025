@@ -1,15 +1,15 @@
 {
-    "Name of the account": "Ewa Agnieszka Zaj\u0105c",
-    "Account Holder's name": "Ewa Agnieszka",
-    "Account Holder's surname": "Zaj\u0105c",
-    "passport_number": "NA3261619",
-    "building_number": "1",
-    "street_name": "Wary\u0144skiego",
-    "postal_code": "03-902",
-    "city": "Gda\u0144sk",
-    "country": "Poland",
-    "name": "Ewa Agnieszka Zaj\u0105c",
-    "phone_number": "+48 632 415 026",
-    "email": "ewa.zajac@wp.pl",
-    "Currency": "PLN"
+    "full_name": "Marek \u010cern\u00fd",
+    "first_name": "Marek",
+    "surname": "\u010cern\u00fd",
+    "passport_number": "XJ9891165",
+    "building_number": "44",
+    "street_name": "B\u011blehradsk\u00e1",
+    "postal_code": "616 36",
+    "city": "Pardubice",
+    "country": "Czech Republic",
+    "name": "Marek \u010cern\u00fd",
+    "phone_number": "847 637 112",
+    "email": "marek.cerny@icloud.com",
+    "Currency": "CZK"
 }

@@ -139,7 +139,7 @@ def predict(txt, png_json, profile_docx, account_opening_pdf):
 
     accept_acc_desc = compare_account_description(account_opening_pdf, txt)
     accept_prof_acc = compare_profile_account(profile_docx, account_opening_pdf)
-    accept_acc_pass = compare_account_passport()
+    accept_acc_pass = compare_account_passport(account_opening_pdf, png_json)
     accept_prof_desc = compare_profile_description(profile_docx, txt)
     # accept_png_desc = compare_passport_description(png_json, txt)
     

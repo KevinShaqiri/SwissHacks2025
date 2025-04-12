@@ -1,87 +1,86 @@
-import json
+from dotenv import load_dotenv
 import os
+from openai import OpenAI
+import json
+from datetime import datetime
+import re
+# Load environment variables
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def compare_account_passport():
+def compare_account_passport(json1: dict, json2: dict) -> bool:
     """
-    Compare values between account_opening_pdf.json and passport_png.json files.
-    Performs case-insensitive comparison of relevant fields.
+    Compare factual details between two structured JSON objects.
+    The function instructs a consistency checker via OpenAI to compare the two JSONs.
+    
+    Args:
+        json1 (dict): The first JSON object containing structured factual data.
+        json2 (dict): The second JSON object containing structured factual data.
     
     Returns:
-        str: True if all comparisons match, False otherwise
+        bool: True if all corresponding factual fields align, False if any inconsistency is found.
+        
+    Raises:
+        ValueError: If the response from OpenAI is not exactly "True" or "False".
     """
-    
-    current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    data_dir = os.path.join(current_dir, 'data')
-    
-    
-    try:
-        with open(os.path.join(data_dir, 'account_opening_pdf.json'), 'r') as account_file:
-            account_data = json.load(account_file)
-        
-        with open(os.path.join(data_dir, 'passport_png.json'), 'r') as passport_file:
-            passport_data = json.load(passport_file)
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        return 'Reject'
-    except json.JSONDecodeError as e:
-        print(f"Error parsing JSON: {e}")
-        return 'Reject'
-    
-    
-    comparisons = [
-        # Compare full name (first_name + surname from passport equals name in account)
-        {
-            'passport_field': lambda data: (data.get('First_name', '') + ' ' + data.get('Surname', '')).lower(),
-            'account_field': lambda data: data.get('name', '').lower(),
-            'description': 'Full name'
-        },
-        # Compare passport number
-        {
-            'passport_field': lambda data: data.get('Passport_number', '').lower(),
-            'account_field': lambda data: data.get('passport_number', '').lower(),
-            'description': 'Passport number'
-        },
-        # Compare first name
-        {
-            'passport_field': lambda data: data.get('First_name', '').lower(),
-            'account_field': lambda data: data.get('Account Holder\'s name', '').lower(),
-            'description': 'First name'
-        },
-        # Compare surname
-        {
-            'passport_field': lambda data: data.get('Surname', '').lower(),
-            'account_field': lambda data: data.get('Account Holder\'s surname', '').lower(),
-            'description': 'Surname'
-        }
-    ]
-    
-    
-    all_match = True
-    mismatches = []
-    
-    for comparison in comparisons:
-        passport_value = comparison['passport_field'](passport_data)
-        account_value = comparison['account_field'](account_data)
-        
-        if passport_value != account_value:
-            all_match = False
-            mismatches.append({
-                'field': comparison['description'],
-                'passport_value': passport_value,
-                'account_value': account_value
-            })
-    
-    # Print results for debugging
-    if not all_match:
-        print("Mismatches found:")
-        for mismatch in mismatches:
-            print(f"  {mismatch['field']}: '{mismatch['passport_value']}' vs '{mismatch['account_value']}'")
-    else:
-        print("All fields match successfully.")
-    
-    return True if all_match else False
+    system_prompt = f"""
+You are a highly skilled consistency checker focused on semantic data analysis. Today is: {datetime.today()}.
+The API will provide you with two JSON objects. Please note:
+- The JSON objects may vary in length and structure and may not share identical keys.
+- Keys representing similar information might have different names (e.g., "surname" vs. "lastName", "DOB" vs. "dateOfBirth").
+- Some fields may include Unicode escape sequences (e.g., "\u2019", "\u00e9") instead of properly parsed special characters. Prior to comparison, normalize these values to their standard representations
+- Your task is to:
+  1. Parse and normalize each JSON object (including converting any Unicode codes to their corresponding characters).
+  2. Identify keys that are semantically equivalent, even if named differently.
+  3. Compare the values of these semantically matched keys.
+  4. Determine if the overall factual data between the two JSON objects is consistent.
 
-# if __name__ == "__main__":
-    
-#     result = compare_account_passport()
-#     print(f"Comparison result: {result}")
+Rules:
+- If all matching fields are consistent or logically aligned, consider the JSONs consistent.
+- If any direct factual contradiction is detected, consider them inconsistent.
+- Reason about why you made such decision, clearly outlying whether there is a contradiction or not. 
+- Your final output (the content) must be EXACTLY one of the following:
+    - "True" if the data is consistent.
+    - "False" if any inconsistency is found.
+
+"""
+
+    user_message = f"""Here are the two JSON objects:
+First JSON:
+{json.dumps(json1, indent=2)}
+
+Second JSON:
+{json.dumps(json2, indent=2)}
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": system_prompt.strip()},
+            {"role": "user", "content": user_message.strip()}
+        ], temperature=0
+    )
+
+    content = response.choices[0].message.content.strip()
+
+    if content.lower() == "true":
+        return True
+    elif content.lower() == "false":
+        return False
+    else:
+        decision = re.sub(r'[^A-Za-z]', '', content.split()[-1])
+        if decision == "True":
+            return True
+        else:
+            return False
+
+if __name__ == "__main__":
+    # Example usage: Adjust the file names and paths to match your environment.
+    with open("./data/profile_docx.json", "r", encoding="utf-8") as f:
+        json1 = json.load(f)
+
+    with open("./data/another_profile.json", "r", encoding="utf-8") as f:
+        json2 = json.load(f)
+
+    result = compare_account_passport(json1, json2)
+    print("Consistent:", result)

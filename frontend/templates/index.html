@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Verification Suite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-wrapper">
+            <div class="gold-accent top-right"></div>
+            <div class="gold-accent bottom-left"></div>
+            
+            <header>
+                <h1>Document Verification</h1>
+                <div class="progress-container">
+                    <div class="progress-stats">
+                        <span>Completion: <strong id="progress-percentage">0%</strong></span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 0%;" id="evaluation-progress-bar"></div>
+                    </div>
+                </div>
+                <style>
+                    .progress-container {
+                        margin-top: 20px;
+                        width: 100%;
+                        text-align: center;
+                    }
+                    .progress-stats {
+                        color: var(--pure-white);
+                        font-size: 1.5rem;
+                        margin-bottom: 12px;
+                        font-weight: 300;
+                    }
+                    .progress-stats strong {
+                        font-weight: 600;
+                    }
+                    .progress-bar-container {
+                        background: rgba(255, 255, 255, 0.3);
+                        height: 18px;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+                        position: relative;
+                        width: 100%;
+                        max-width: 400px;
+                        margin: 0 auto;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    }
+                    .progress-bar {
+                        height: 100%;
+                        background: linear-gradient(90deg, #0066b3, #52a8ff);
+                        border-radius: 10px;
+                        transition: width 0.8s ease;
+                        position: relative;
+                        overflow: hidden;
+                        box-shadow: 0 0 10px rgba(82, 168, 255, 0.7);
+                        animation: pulse-glow 2s infinite;
+                    }
+                    .progress-bar::after {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 50%;
+                        height: 100%;
+                        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+                        animation: shine 1.5s infinite;
+                    }
+                    @keyframes pulse-glow {
+                        0% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
+                        50% { box-shadow: 0 0 15px rgba(82, 168, 255, 0.8); }
+                        100% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
+                    }
+                    @keyframes shine {
+                        0% { left: -100%; }
+                        100% { left: 100%; }
+                    }
+                </style>
+            </header>
+        </div>
+
+        <div class="main-content">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <div class="alert"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('upload_files') }}" method="post" enctype="multipart/form-data" class="upload-form">
+                <div class="file-upload-container">
+                    <div class="file-upload">
+                        <label for="passport"><i class="fas fa-passport"></i> Passport Identification</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="passport" name="passport" accept=".png" required>
+                            <div class="custom-file-upload">
+                                <div class="file-icon"><i class="fas fa-passport"></i></div>
+                                <div class="file-text">Upload Passport</div>
+                                <div class="file-format">PNG format</div>
+                            </div>
+                            <div class="file-name" id="passport-file-name">No file selected</div>
+                        </div>
+                    </div>
+
+                    <div class="file-upload">
+                        <label for="profile"><i class="fas fa-user-tie"></i> Client Profile</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="profile" name="profile" accept=".docx" required>
+                            <div class="custom-file-upload">
+                                <div class="file-icon"><i class="fas fa-user-tie"></i></div>
+                                <div class="file-text">Upload Profile</div>
+                                <div class="file-format">DOCX format</div>
+                            </div>
+                            <div class="file-name" id="profile-file-name">No file selected</div>
+                        </div>
+                    </div>
+
+                    <div class="file-upload">
+                        <label for="account_form"><i class="fas fa-file-contract"></i> Account Opening Form</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="account_form" name="account_form" accept=".pdf" required>
+                            <div class="custom-file-upload">
+                                <div class="file-icon"><i class="fas fa-file-contract"></i></div>
+                                <div class="file-text">Upload Form</div>
+                                <div class="file-format">PDF format</div>
+                            </div>
+                            <div class="file-name" id="account-form-file-name">No file selected</div>
+                        </div>
+                    </div>
+
+                    <div class="file-upload">
+                        <label for="description"><i class="fas fa-align-left"></i> Client Description</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="description" name="description" accept=".txt" required>
+                            <div class="custom-file-upload">
+                                <div class="file-icon"><i class="fas fa-align-left"></i></div>
+                                <div class="file-text">Upload Description</div>
+                                <div class="file-format">TXT format</div>
+                            </div>
+                            <div class="file-name" id="description-file-name">No file selected</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-container">
+                    <button type="submit" class="submit-btn btn-shine">
+                        <i class="fas fa-shield-alt"></i> Verify Documents
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize progress tracking
+        function initProgressBar() {
+            // Set default values if not present
+            if (!localStorage.getItem('totalEvaluations')) {
+                localStorage.setItem('totalEvaluations', '7');
+            }
+            
+            if (!localStorage.getItem('completedEvaluations')) {
+                localStorage.setItem('completedEvaluations', '0');
+            }
+            
+            updateProgressBar();
+        }
+        
+        // Update the progress bar display
+        function updateProgressBar() {
+            const total = parseInt(localStorage.getItem('totalEvaluations'));
+            const completed = parseInt(localStorage.getItem('completedEvaluations'));
+            
+            // Calculate percentage
+            const percentage = Math.round((completed / total) * 100);
+            
+            // Update text
+            const progressStats = document.getElementById('progress-percentage');
+            progressStats.textContent = `${percentage}%`;
+            
+            // Update progress bar
+            const progressBar = document.getElementById('evaluation-progress-bar');
+            progressBar.style.width = `${percentage}%`;
+        }
+        
+        // Call init on page load
+        initProgressBar();
+        
+        // Handle form submission
+        document.querySelector('.upload-form').addEventListener('submit', function(e) {
+            // Don't increment if form validation fails
+            if (!this.checkValidity()) {
+                return;
+            }
+            
+            // Store form submission in session storage to handle redirect return
+            sessionStorage.setItem('formSubmitted', 'true');
+        });
+        
+        // Check if returning from successful submission (browser back button)
+        if (sessionStorage.getItem('formSubmitted') === 'true') {
+            sessionStorage.removeItem('formSubmitted');
+            
+            // Increment completed evaluations
+            let completed = parseInt(localStorage.getItem('completedEvaluations'));
+            const total = parseInt(localStorage.getItem('totalEvaluations'));
+            
+            if (completed < total) {
+                completed += 1;
+                localStorage.setItem('completedEvaluations', completed.toString());
+                updateProgressBar();
+            }
+        }
+        
+        // Display selected filename for each input
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function(e) {
+                const fileName = this.files[0] ? this.files[0].name : 'No file selected';
+                const id = this.id;
+                document.getElementById(`${id}-file-name`).textContent = fileName;
+                
+                // Add selected class to parent wrapper
+                const wrapper = this.closest('.file-input-wrapper');
+                if (this.files[0]) {
+                    wrapper.classList.add('file-selected');
+                } else {
+                    wrapper.classList.remove('file-selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

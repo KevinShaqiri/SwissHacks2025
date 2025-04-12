@@ -51,11 +51,11 @@ def extract_pdf_form_data(pdf_path):
                                     form_data['Currency'] = 'USD'
                         
                         elif 'name of the account' in field_name.lower() or field_name == 'account_name':
-                            form_data['Name of the account'] = field_value
+                            form_data['full_name'] = field_value
                         elif "account holder's name" in field_name.lower() or field_name == 'account_holder_name':
-                            form_data["Account Holder's name"] = field_value
+                            form_data["first_name"] = field_value
                         elif "account holder's surname" in field_name.lower() or field_name == 'account_holder_surname':
-                            form_data["Account Holder's surname"] = field_value
+                            form_data["surname"] = field_value
                         else:
                             form_data[field_name] = field_value
                 
@@ -145,5 +145,5 @@ if __name__ == "__main__":
     with open(output_json, 'w') as json_file:
         json.dump(form_data_dict, json_file, indent=4)
     
-    # flatten_pdf_with_fitx(input_pdf, output_pdf)
+    flatten_pdf_with_fitx(input_pdf, output_pdf)
     exit(0)
