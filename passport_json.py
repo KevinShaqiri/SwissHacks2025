@@ -89,5 +89,6 @@ if __name__ == "__main__":
     # Extract passport data
     passport_data = extract_passport_data(image_path)
     
-    # Print the extracted data
-    print(json.dumps(passport_data, indent=2))
+    # Return the extracted data
+    print(json.dumps(passport_data))
+    exit(0)

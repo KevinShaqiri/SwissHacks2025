@@ -1,5 +1,6 @@
 import fitz
 import os
+import json
 
 def extract_pdf_form_data(pdf_path):
     form_data = {}
@@ -139,6 +140,7 @@ if __name__ == "__main__":
     
     form_data_dict = extract_pdf_form_data(input_pdf)
     
-    print(form_data_dict)
+    print(json.dumps(form_data_dict))
     
     flatten_pdf_with_fitx(input_pdf, output_pdf)
+    exit(0)
