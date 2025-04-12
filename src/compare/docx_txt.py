@@ -7,7 +7,7 @@ import re
 
 # Load env variables
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("SWISSHACKS_API"))
 
 def compare_profile_description(docx_json: dict, text_content: str) -> bool:
     system_prompt = f"""

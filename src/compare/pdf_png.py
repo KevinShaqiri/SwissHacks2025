@@ -58,7 +58,7 @@ Second JSON:
         messages=[
             {"role": "system", "content": system_prompt.strip()},
             {"role": "user", "content": user_message.strip()}
-        ], temperature=0
+        ], temperature=0.5
     )
 
     content = response.choices[0].message.content.strip()
