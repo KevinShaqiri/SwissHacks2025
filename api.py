@@ -109,7 +109,7 @@ def main():
     status = "success"
     score = 0
     # while (status != "gameover") and (status != None):
-    client_id, score, status = make_prediction(session_id, client_id, "Accept")
+    # client_id, score, status = make_prediction(session_id, client_id, "Accept")
     
     print(f"The score reached is {score}")
 
