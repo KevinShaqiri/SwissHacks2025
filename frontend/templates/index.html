@@ -16,7 +16,71 @@
             
             <header>
                 <h1>Document Verification</h1>
-                <p class="subtitle">Secure Global Verification Services</p>
+                <div class="progress-container">
+                    <div class="progress-stats">
+                        <span>Completion: <strong id="progress-percentage">0%</strong></span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 0%;" id="evaluation-progress-bar"></div>
+                    </div>
+                </div>
+                <style>
+                    .progress-container {
+                        margin-top: 20px;
+                        width: 100%;
+                        text-align: center;
+                    }
+                    .progress-stats {
+                        color: var(--pure-white);
+                        font-size: 1.5rem;
+                        margin-bottom: 12px;
+                        font-weight: 300;
+                    }
+                    .progress-stats strong {
+                        font-weight: 600;
+                    }
+                    .progress-bar-container {
+                        background: rgba(255, 255, 255, 0.3);
+                        height: 18px;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+                        position: relative;
+                        width: 100%;
+                        max-width: 400px;
+                        margin: 0 auto;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    }
+                    .progress-bar {
+                        height: 100%;
+                        background: linear-gradient(90deg, #0066b3, #52a8ff);
+                        border-radius: 10px;
+                        transition: width 0.8s ease;
+                        position: relative;
+                        overflow: hidden;
+                        box-shadow: 0 0 10px rgba(82, 168, 255, 0.7);
+                        animation: pulse-glow 2s infinite;
+                    }
+                    .progress-bar::after {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 50%;
+                        height: 100%;
+                        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+                        animation: shine 1.5s infinite;
+                    }
+                    @keyframes pulse-glow {
+                        0% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
+                        50% { box-shadow: 0 0 15px rgba(82, 168, 255, 0.8); }
+                        100% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
+                    }
+                    @keyframes shine {
+                        0% { left: -100%; }
+                        100% { left: 100%; }
+                    }
+                </style>
             </header>
         </div>
 
@@ -96,6 +160,66 @@
     </div>
 
     <script>
+        // Initialize progress tracking
+        function initProgressBar() {
+            // Set default values if not present
+            if (!localStorage.getItem('totalEvaluations')) {
+                localStorage.setItem('totalEvaluations', '7');
+            }
+            
+            if (!localStorage.getItem('completedEvaluations')) {
+                localStorage.setItem('completedEvaluations', '0');
+            }
+            
+            updateProgressBar();
+        }
+        
+        // Update the progress bar display
+        function updateProgressBar() {
+            const total = parseInt(localStorage.getItem('totalEvaluations'));
+            const completed = parseInt(localStorage.getItem('completedEvaluations'));
+            
+            // Calculate percentage
+            const percentage = Math.round((completed / total) * 100);
+            
+            // Update text
+            const progressStats = document.getElementById('progress-percentage');
+            progressStats.textContent = `${percentage}%`;
+            
+            // Update progress bar
+            const progressBar = document.getElementById('evaluation-progress-bar');
+            progressBar.style.width = `${percentage}%`;
+        }
+        
+        // Call init on page load
+        initProgressBar();
+        
+        // Handle form submission
+        document.querySelector('.upload-form').addEventListener('submit', function(e) {
+            // Don't increment if form validation fails
+            if (!this.checkValidity()) {
+                return;
+            }
+            
+            // Store form submission in session storage to handle redirect return
+            sessionStorage.setItem('formSubmitted', 'true');
+        });
+        
+        // Check if returning from successful submission (browser back button)
+        if (sessionStorage.getItem('formSubmitted') === 'true') {
+            sessionStorage.removeItem('formSubmitted');
+            
+            // Increment completed evaluations
+            let completed = parseInt(localStorage.getItem('completedEvaluations'));
+            const total = parseInt(localStorage.getItem('totalEvaluations'));
+            
+            if (completed < total) {
+                completed += 1;
+                localStorage.setItem('completedEvaluations', completed.toString());
+                updateProgressBar();
+            }
+        }
+        
         // Display selected filename for each input
         document.querySelectorAll('input[type="file"]').forEach(input => {
             input.addEventListener('change', function(e) {
