@@ -19,7 +19,7 @@ def extract_passport_data(image_path):
     base64_image = encode_image(image_path)
     
     # Initialize OpenAI client (requires API key in environment variable OPENAI_API_KEY)
-    client = OpenAI(api_key="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")
+    client = OpenAI(api_key=os.getenv("SWISSHACKS_API"))
     
     # Create the prompt for analyzing passport data
     prompt = """
