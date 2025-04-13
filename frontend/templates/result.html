@@ -587,32 +587,26 @@
             100% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.6); }
         }
         
-        /* Base document containers styling */
-        .document-card {
-            transition: all 0.3s ease;
+        /* Additional styling for highlighting inconsistencies */
+        .doc-field.inconsistent {
+            background-color: rgba(255, 0, 0, 0.15) !important;
+            border-left: 4px solid #FF0000 !important;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6) !important;
+            animation: pulse 2s infinite !important;
         }
         
-        /* Enhanced styling for highlighted fields */
-        .doc-field.highlight, 
-        .doc-field-value.highlight {
-            transition: all 0.3s ease;
+        .doc-field.inconsistent .doc-field-name {
+            color: #FF0000 !important;
+            font-weight: bold !important;
         }
         
-        /* Hover effects for documents */
-        .document-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        /* Responsive layout for small screens */
-        @media (max-width: 768px) {
-            .documents-container {
-                flex-direction: column;
-            }
-            .document-card {
-                width: 100%;
-                margin-bottom: 20px;
-            }
+        .doc-field.inconsistent .doc-field-value {
+            background-color: rgba(255, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 0, 0, 0.5) !important;
+            color: #FF0000 !important;
+            font-weight: bold !important;
+            padding: 5px !important;
+            border-radius: 4px !important;
         }
     </style>
 </head>
@@ -829,200 +823,175 @@
         // GUARANTEED APPROACH: Use DOM onload events and direct scrolling
         window.onload = function() {
             console.log("Window.onload - Initiating scrolling and highlighting");
-            highlightInconsistentFields(); 
-            setTimeout(forceScrollToHighlightedFields, 1000);
-            
-            // Add fallback highlighting in case the normal method fails
-            setTimeout(function() {
-                var highlightedFields = document.querySelectorAll('.doc-field[style*="background-color: rgba(255, 0, 0"]');
-                console.log("Check if fields were highlighted:", highlightedFields.length);
-                
-                if (highlightedFields.length === 0) {
-                    console.log("No fields were highlighted, applying fallback highlighting");
-                    applyFallbackHighlighting();
-                }
-            }, 2000);
+            setTimeout(processInconsistencyData, 500);
         };
 
-        // Force direct scrolling to highlighted fields
-        function forceScrollToHighlightedFields() {
-            console.log("FORCE SCROLLING DOCUMENTS...");
-            
-            // Profile document (left panel)
-            var profileContainer = document.getElementById('profile-container');
-            if (profileContainer) {
-                profileContainer.scrollTop = 300;
-                console.log("Direct scroll applied - profile container");
+        function processInconsistencyData() {
+            console.log("Processing inconsistency data");
+            try {
+                // Parse the template data into JSON
+                var inconsistencies = JSON.parse('{{ detailed_inconsistencies|tojson|safe }}');
+                console.log("Found inconsistencies:", inconsistencies.length);
                 
-                try {
-                    profileContainer.scrollTo(0, 300);
-                } catch (e) {}
-            }
-            
-            // Account document (center panel)
-            var accountContainer = document.querySelector('.document-card:nth-child(2) .document-content');
-            if (accountContainer) {
-                accountContainer.scrollTop = 230;
-                console.log("Direct scroll applied - account container");
+                if (inconsistencies && inconsistencies.length > 0) {
+                    // Process each inconsistency
+                    inconsistencies.forEach(function(item) {
+                        console.log("Processing inconsistency item:", item);
+                        
+                        // Make sure we have the required data
+                        if (!item.profile_field) {
+                            console.log("Missing profile_field in inconsistency item");
+                            return;
+                        }
+                        
+                        // For email fields
+                        if (item.profile_field.toLowerCase().includes('email')) {
+                            processEmailInconsistency(item);
+                        } else {
+                            // For other fields
+                            processGeneralInconsistency(item);
+                        }
+                    });
+                } else {
+                    console.log("No inconsistencies found");
+                }
                 
-                try {
-                    accountContainer.scrollTo(0, 230);
-                } catch (e) {}
-            }
-            
-            // Passport document (right panel)
-            var passportContainer = document.querySelector('.document-card:nth-child(3) .document-content');
-            if (passportContainer) {
-                passportContainer.scrollTop = 100;
-                console.log("Direct scroll applied - passport container");
+                // Check if any fields were highlighted
+                if (document.querySelectorAll('.doc-field.inconsistent').length === 0) {
+                    console.log("No fields were highlighted, forcing email highlighting");
+                    forceHighlightEmail();
+                }
                 
-                try {
-                    passportContainer.scrollTo(0, 100);
-                } catch (e) {}
+                // Scroll to the containers after highlighting
+                setTimeout(scrollToHighlightedFields, 1000);
+            } catch (e) {
+                console.error("Error processing inconsistency data:", e);
+                // Fallback - force highlight emails
+                forceHighlightEmail();
             }
         }
         
-        function highlightInconsistentFields(inconsistencyData) {
-            console.log("Starting to highlight inconsistent fields with data:", inconsistencyData);
+        function processEmailInconsistency(item) {
+            console.log("Processing email inconsistency:", item.profile_field, item.profile_value);
             
-            // Process each inconsistency
-            for (const inconsistency of inconsistencyData) {
-                console.log("Processing inconsistency:", inconsistency);
-                const fieldName = inconsistency.profile_field;
-                const fieldValue = inconsistency.profile_value;
-                
-                let highlighted = false;
-                
-                // Try to match field names
-                document.querySelectorAll('.doc-field').forEach(field => {
-                    const fieldNameElem = field.querySelector('.doc-field-name');
-                    const fieldValueElem = field.querySelector('.doc-field-value');
-                    
-                    if (!fieldNameElem || !fieldValueElem) return;
-                    
-                    const fieldText = fieldNameElem.textContent.trim().toLowerCase();
-                    
-                    const isNameField = fieldText.includes('name') || fieldText.includes('full name');
-                    const isEmailField = fieldText.includes('email');
-                    const isBirthDateField = fieldText.includes('birth') || fieldText.includes('date of birth');
-                    const isPassportField = fieldText.includes('passport') && fieldText.includes('number');
-                    
-                    // Match by field name
-                    if (fieldText === fieldName.toLowerCase() ||
-                        field.getAttribute('data-field-name').toLowerCase() === fieldName.toLowerCase() ||
-                        (fieldName.toLowerCase() === 'name' && isNameField) ||
-                        (fieldName.toLowerCase() === 'email' && isEmailField) ||
-                        (fieldName.toLowerCase().includes('email') && isEmailField) ||
-                        (fieldName.toLowerCase() === 'birth date' && isBirthDateField) ||
-                        (fieldName.toLowerCase() === 'passport number' && isPassportField)) {
-                        
-                        console.log(`Found matching field: ${fieldText}`);
-                        
-                        // Highlight the field regardless of value match
-                        highlightSingleField(field);
-                        highlighted = true;
+            // First try exact match by data attribute
+            var emailFields = document.querySelectorAll('.doc-field[data-field-name="email"]');
+            if (emailFields.length === 0) {
+                // Try with contains
+                emailFields = document.querySelectorAll('.doc-field[data-field-name*="email"]');
+            }
+            
+            if (emailFields.length > 0) {
+                console.log("Found", emailFields.length, "email fields");
+                emailFields.forEach(function(field) {
+                    const valueElem = field.querySelector('.doc-field-value');
+                    if (valueElem && valueElem.textContent.trim() === item.profile_value) {
+                        console.log("Found exact email match:", valueElem.textContent.trim());
+                        field.classList.add('inconsistent');
+                    } else {
+                        // If we can't find an exact match, highlight all email fields
+                        field.classList.add('inconsistent');
+                    }
+                });
+            } else {
+                console.log("No email fields found");
+            }
+        }
+        
+        function processGeneralInconsistency(item) {
+            console.log("Processing general inconsistency:", item.profile_field);
+            
+            // Try different selectors to find the field
+            var fieldSelectors = [
+                `.doc-field[data-field-name="${item.profile_field.toLowerCase()}"]`,
+                `.doc-field[data-field-name*="${item.profile_field.toLowerCase()}"]`
+            ];
+            
+            var fieldFound = false;
+            
+            // Try each selector
+            for (const selector of fieldSelectors) {
+                const fields = document.querySelectorAll(selector);
+                if (fields.length > 0) {
+                    console.log("Found fields with selector:", selector, fields.length);
+                    fields.forEach(field => {
+                        field.classList.add('inconsistent');
+                        fieldFound = true;
+                    });
+                    break;
+                }
+            }
+            
+            // If we couldn't find the field, try matching by value
+            if (!fieldFound && item.profile_value) {
+                const allFields = document.querySelectorAll('.doc-field');
+                allFields.forEach(field => {
+                    const valueElem = field.querySelector('.doc-field-value');
+                    if (valueElem && valueElem.textContent.trim() === item.profile_value) {
+                        console.log("Found field by value match:", item.profile_value);
+                        field.classList.add('inconsistent');
+                        fieldFound = true;
                     }
                 });
             }
-            
-            // If nothing was highlighted, apply fallback highlighting
-            if (document.querySelectorAll('.doc-field.highlight').length === 0) {
-                console.log("No fields were highlighted, applying fallback highlighting");
-                applyFallbackHighlighting();
-            }
         }
         
-        function highlightSingleField(field) {
-            if (field) {
-                field.classList.add('highlight');
-                field.style.color = '#FF0000';
-                field.style.fontWeight = 'bold';
-                field.style.backgroundColor = 'rgba(255, 0, 0, 0.15)';
-                field.style.borderLeft = '4px solid #FF0000';
-                field.style.padding = '3px';
-                field.style.borderRadius = '3px';
-                field.style.animation = 'pulse 1.5s infinite';
-                
-                // Also style the field name element
-                var fieldNameElem = field.querySelector('.doc-field-name');
-                if (fieldNameElem) {
-                    fieldNameElem.style.color = '#FF0000';
-                    fieldNameElem.style.fontWeight = 'bold';
-                }
-                
-                // Also style the field value element
-                var fieldValueElem = field.querySelector('.doc-field-value');
-                if (fieldValueElem) {
-                    fieldValueElem.style.color = '#FF0000';
-                    fieldValueElem.style.fontWeight = 'bold';
-                    fieldValueElem.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
-                    fieldValueElem.style.padding = '5px';
-                    fieldValueElem.style.borderRadius = '4px';
-                    fieldValueElem.style.border = '1px solid #FF0000';
-                }
-                
-                console.log("Highlighted field:", field);
-            }
-        }
-        
-        // Helper function to highlight ALL email fields as a fallback
-        function applyFallbackHighlighting() {
-            console.log("Applying fallback highlighting");
-            
-            // First try emails
-            var emailFields = document.querySelectorAll('.doc-field[data-field-name*="email"]');
+        function forceHighlightEmail() {
+            console.log("Force highlighting email fields");
+            const emailFields = document.querySelectorAll('.doc-field[data-field-name*="email"]');
             if (emailFields.length > 0) {
-                console.log("Highlighting all email fields as fallback:", emailFields.length, "fields found");
-                emailFields.forEach(function(field) {
-                    highlightSingleField(field);
+                emailFields.forEach(field => {
+                    field.classList.add('inconsistent');
                 });
-                return;
-            }
-            
-            // Then try names
-            var nameFields = document.querySelectorAll('.doc-field[data-field-name*="name"]');
-            if (nameFields.length > 0) {
-                console.log("Highlighting all name fields as fallback:", nameFields.length, "fields found");
-                nameFields.forEach(function(field) {
-                    highlightSingleField(field);
+            } else {
+                // Last resort - highlight first field in each document
+                console.log("No email fields found, highlighting first field in each document");
+                document.querySelectorAll('.document-card').forEach(card => {
+                    const firstField = card.querySelector('.doc-field');
+                    if (firstField) {
+                        firstField.classList.add('inconsistent');
+                    }
                 });
-                return;
             }
+        }
+        
+        function scrollToHighlightedFields() {
+            console.log("Scrolling to highlighted fields");
             
-            // Last resort - highlight first field in each document
-            console.log("Last resort - highlighting first field in each document");
-            document.querySelectorAll('.document-card').forEach(function(card) {
-                var firstField = card.querySelector('.doc-field');
-                if (firstField) {
-                    console.log("Highlighting first field in document:", firstField);
-                    highlightSingleField(firstField);
+            // Find all documents
+            const documents = document.querySelectorAll('.document-card');
+            
+            // For each document, scroll to the first highlighted field
+            documents.forEach((doc, index) => {
+                const highlightedField = doc.querySelector('.doc-field.inconsistent');
+                const docContainer = doc.querySelector('.document-content');
+                
+                if (highlightedField && docContainer) {
+                    // Get the position of the highlighted field
+                    const fieldRect = highlightedField.getBoundingClientRect();
+                    const containerRect = docContainer.getBoundingClientRect();
+                    
+                    // Calculate the scroll position
+                    const scrollPosition = highlightedField.offsetTop - containerRect.height / 2;
+                    
+                    // Scroll the container
+                    docContainer.scrollTop = Math.max(0, scrollPosition);
+                    console.log(`Scrolled document ${index + 1} to position:`, scrollPosition);
+                } else {
+                    // If no highlighted field, use default positions
+                    if (docContainer) {
+                        if (index === 0) { // Profile document
+                            docContainer.scrollTop = 300;
+                        } else if (index === 1) { // Account document
+                            docContainer.scrollTop = 230;
+                        } else if (index === 2) { // Passport document
+                            docContainer.scrollTop = 100;
+                        }
+                        console.log(`Scrolled document ${index + 1} to default position`);
+                    }
                 }
             });
         }
-        
-        // Call the highlighting function when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM fully loaded, highlighting inconsistent fields");
-            var inconsistencies = JSON.parse('{{ detailed_inconsistencies|tojson|safe }}');
-            console.log("Found inconsistencies:", inconsistencies.length);
-            console.log("Inconsistency data structure:", JSON.stringify(inconsistencies, null, 2));
-            
-            // Ensure we have data in the correct format
-            if (inconsistencies && inconsistencies.length > 0) {
-                highlightInconsistentFields(inconsistencies);
-            } else {
-                console.log("No inconsistencies found, applying fallback highlighting");
-                applyFallbackHighlighting();
-            }
-            
-            // Add event listeners to any buttons
-            var discrepancyButton = document.getElementById('discrepancyButton');
-            if (discrepancyButton) {
-                discrepancyButton.addEventListener('click', function() {
-                    toggleDiscrepancyView();
-                });
-            }
-        });
     </script>
     {% endif %}
 </body>
