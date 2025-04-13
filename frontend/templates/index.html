@@ -3,17 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Verification Suite</title>
+    <title>Document Verification</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html, body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header-wrapper {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #012a4a 0%, #013a63 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border-bottom: 2px solid #ffc107;
+        }
+        
+        .header-wrapper .gold-accent {
+            display: none;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1600px;
+        }
+        
+        header::after {
+            display: none;
+        }
+        
+        header h1 {
+            font-size: 1.3rem;
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            width: auto;
+            margin-left: auto;
+        }
+        
+        .progress-stats {
+            margin-right: 15px;
+            font-size: 0.9rem !important;
+            white-space: nowrap;
+            margin-bottom: 0 !important;
+        }
+        
+        .progress-bar-container {
+            width: 180px;
+            height: 10px !important;
+            margin: 0 !important;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0066b3, #52a8ff);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(82, 168, 255, 0.7);
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shine 1.5s infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(82, 168, 255, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f3f8 0%, #e5eaf2 100%);
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            max-height: calc(100vh - 50px - 3rem);
+        }
+        
+        .file-upload-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 0.5rem;
+            max-height: calc(100% - 70px);
+            overflow: hidden;
+        }
+        
+        .file-upload {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: none;
+        }
+        
+        .file-upload label {
+            padding: 0.75rem;
+            background: #f5f7fa;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 0;
+        }
+        
+        .file-input-wrapper {
+            flex: 1;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .custom-file-upload {
+            flex: 1;
+            min-height: auto;
+        }
+        
+        .submit-container {
+            padding-top: 1rem;
+            text-align: center;
+        }
+        
+        .submit-btn {
+            padding: 0.75rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+        }
+        
+        /* Hide in-header styles */
+        header style {
+            display: none;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header-wrapper {
+                padding: 0.4rem 0.75rem;
+                height: 45px;
+            }
+            
+            header h1 {
+                font-size: 1.1rem;
+            }
+            
+            .progress-stats {
+                display: none;
+            }
+            
+            .progress-bar-container {
+                width: 120px;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .file-upload-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .upload-form {
+                max-height: calc(100vh - 45px - 2rem);
+            }
+        }
+        
+        @media (max-width: 380px) {
+            .header-wrapper {
+                height: 40px;
+            }
+            
+            header h1 {
+                font-size: 1rem;
+            }
+            
+            .progress-bar-container {
+                width: 80px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header-wrapper">
-            <div class="gold-accent top-right"></div>
-            <div class="gold-accent bottom-left"></div>
-            
             <header>
                 <h1>Document Verification</h1>
                 <div class="progress-container">
@@ -24,63 +254,6 @@
                         <div class="progress-bar" style="width: 0%;" id="evaluation-progress-bar"></div>
                     </div>
                 </div>
-                <style>
-                    .progress-container {
-                        margin-top: 20px;
-                        width: 100%;
-                        text-align: center;
-                    }
-                    .progress-stats {
-                        color: var(--pure-white);
-                        font-size: 1.5rem;
-                        margin-bottom: 12px;
-                        font-weight: 300;
-                    }
-                    .progress-stats strong {
-                        font-weight: 600;
-                    }
-                    .progress-bar-container {
-                        background: rgba(255, 255, 255, 0.3);
-                        height: 18px;
-                        border-radius: 12px;
-                        overflow: hidden;
-                        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-                        position: relative;
-                        width: 100%;
-                        max-width: 400px;
-                        margin: 0 auto;
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                    }
-                    .progress-bar {
-                        height: 100%;
-                        background: linear-gradient(90deg, #0066b3, #52a8ff);
-                        border-radius: 10px;
-                        transition: width 0.8s ease;
-                        position: relative;
-                        overflow: hidden;
-                        box-shadow: 0 0 10px rgba(82, 168, 255, 0.7);
-                        animation: pulse-glow 2s infinite;
-                    }
-                    .progress-bar::after {
-                        content: '';
-                        position: absolute;
-                        top: 0;
-                        left: -100%;
-                        width: 50%;
-                        height: 100%;
-                        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-                        animation: shine 1.5s infinite;
-                    }
-                    @keyframes pulse-glow {
-                        0% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
-                        50% { box-shadow: 0 0 15px rgba(82, 168, 255, 0.8); }
-                        100% { box-shadow: 0 0 5px rgba(82, 168, 255, 0.5); }
-                    }
-                    @keyframes shine {
-                        0% { left: -100%; }
-                        100% { left: 100%; }
-                    }
-                </style>
             </header>
         </div>
 
@@ -132,7 +305,7 @@
                                 <div class="file-text">Upload Form</div>
                                 <div class="file-format">PDF format</div>
                             </div>
-                            <div class="file-name" id="account-form-file-name">No file selected</div>
+                            <div class="file-name" id="account_form-file-name">No file selected</div>
                         </div>
                     </div>
 
@@ -225,7 +398,22 @@
             input.addEventListener('change', function(e) {
                 const fileName = this.files[0] ? this.files[0].name : 'No file selected';
                 const id = this.id;
-                document.getElementById(`${id}-file-name`).textContent = fileName;
+                
+                // Try to find the file name display element using the ID pattern
+                let fileNameElement = document.getElementById(`${id}-file-name`);
+                
+                // If not found, try alternative ID format (for backwards compatibility)
+                if (!fileNameElement) {
+                    const altId = id.replace('_', '-');
+                    fileNameElement = document.getElementById(`${altId}-file-name`);
+                }
+                
+                // Update the text if the element was found
+                if (fileNameElement) {
+                    fileNameElement.textContent = fileName;
+                } else {
+                    console.warn(`File name display element not found for input ${id}`);
+                }
                 
                 // Add selected class to parent wrapper
                 const wrapper = this.closest('.file-input-wrapper');
