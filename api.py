@@ -312,6 +312,46 @@ def check_cross_document_fields(json1, json2, label1="Document 1", label2="Docum
     
     return all_consistent, inconsistencies
 
+def decode_unicode_escapes(data):
+    """
+    Recursively processes a dictionary and converts ONLY Unicode escape sequences
+    like \u00e9 to their actual Unicode characters, while preserving other escape sequences.
+    
+    Args:
+        data: Dictionary or list to process
+        
+    Returns:
+        Processed data with only Unicode escape sequences decoded
+    """
+    if isinstance(data, dict):
+        result = {}
+        for key, value in data.items():
+            # Process the key and values recursively
+            result[key] = decode_unicode_escapes(value)
+        return result
+    elif isinstance(data, list):
+        return [decode_unicode_escapes(item) for item in data]
+    elif isinstance(data, str):
+        # Only decode \uXXXX patterns specifically
+        import re
+        
+        def replace_unicode_escape(match):
+            try:
+                # Convert the escape sequence to actual character
+                escape_seq = match.group(0)
+                # Only process if it's a unicode escape sequence
+                if escape_seq.startswith('\\u'):
+                    return escape_seq.encode('ascii').decode('unicode-escape')
+                return escape_seq
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                return match.group(0)  # Return original if error
+        
+        # Find and replace only \uXXXX patterns
+        return re.sub(r'\\u[0-9a-fA-F]{4}', replace_unicode_escape, data)
+    else:
+        # For other data types (int, float, bool, None), return as is
+        return data
+
 def enhance_docx_txt_comparison(profile_docx, description_text):
     """
     Enhanced version of docx-txt comparison with much more thorough text analysis
@@ -402,7 +442,7 @@ Search for ANY contradictions or inconsistencies, no matter how subtle.
             {"role": "system", "content": system_prompt.strip()},
             {"role": "user", "content": user_message.strip()}
         ],
-        temperature=0.0  # Zero temperature for most deterministic output
+        temperature=0.0  
     )
     
     content = response.choices[0].message.content.strip().lower()
@@ -482,7 +522,7 @@ def predict(txt, png_json, profile_docx, account_opening_pdf):
         ]
         
         # For short names, be more careful about matching whole words
-        if len(first_name) <= 3:
+        if len(first_name) <= 3: 
             # Use word boundary regex to find whole word matches
             found = False
             import re
@@ -570,6 +610,23 @@ def predict(txt, png_json, profile_docx, account_opening_pdf):
                 "possible_names_in_text": extract_patterns_from_text(txt).get('names', [])
             }
             inconsistencies.append(inconsistency_explanation)
+        
+    # --- EMAIL VERIFICATION CHECK ---    
+    # Get email from profile_docx (communication_medium_email)
+    profile_email = profile_docx.get('communication_medium_email')
+    
+    # Get email from account_opening_pdf
+    account_email = account_opening_pdf.get('email')
+    
+    if profile_email and account_email and profile_email != account_email:
+        inconsistency_explanation = {
+            "error_type": "EMAIL_MISMATCH",
+            "profile_email": profile_email,
+            "account_email": account_email,
+            "explanation": f"Email mismatch: '{profile_email}' in profile document doesn't match '{account_email}' in account opening form"
+        }
+        inconsistencies.append(inconsistency_explanation)
+        print(f"Email mismatch detected: '{profile_email}' vs '{account_email}'")
     
     # --- DECISION LOGIC ---
     # If any inconsistencies were found, reject
@@ -598,6 +655,13 @@ def main():
         with open("./data/description.txt", "r", encoding="utf-8") as f:
             txt = f.read()
         profile_docx, png_json, account_opening_pdf = extract_jsons()
+        
+        # Decode Unicode escape sequences in all JSON data
+        print("Decoding Unicode escape sequences in JSON data...")
+        profile_docx = decode_unicode_escapes(profile_docx)
+        png_json = decode_unicode_escapes(png_json)
+        account_opening_pdf = decode_unicode_escapes(account_opening_pdf)
+        
         pred = predict(txt, png_json, profile_docx, account_opening_pdf)
         print(f"Prediction made: {pred}")
         client_id, score, status = make_prediction(session_id, client_id, pred)

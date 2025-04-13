@@ -3,11 +3,87 @@ import base64
 from openai import OpenAI
 import json
 from pathlib import Path
+import re
+from datetime import datetime
 
 def encode_image(image_path):
     """Encode image to base64 string"""
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
+
+def convert_date_format(date_str):
+    """Convert date from formats like '03-Jun-2021' to ISO format '2021-06-03'"""
+    if not date_str or date_str == "null":
+        return date_str
+    
+    # Try different date formats
+    date_formats = [
+        # 03-Jun-2021, 3-Jun-2021, 03 Jun 2021, 3 Jun 2021
+        r'(\d{1,2})[-\s]([A-Za-z]{3})[-\s](\d{4})',
+        # Jun-03-2021, Jun 03 2021
+        r'([A-Za-z]{3})[-\s](\d{1,2})[-\s](\d{4})',
+        # 03.06.2021, 3.6.2021
+        r'(\d{1,2})\.(\d{1,2})\.(\d{4})',
+        # 03/06/2021, 3/6/2021
+        r'(\d{1,2})/(\d{1,2})/(\d{4})',
+        # 2021-06-03, 2021.06.03, 2021/06/03
+        r'(\d{4})[-\./](\d{1,2})[-\./](\d{1,2})'
+    ]
+    
+    # Month name to number mapping
+    month_map = {
+        'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
+        'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+    }
+    
+    for pattern in date_formats:
+        match = re.search(pattern, date_str, re.IGNORECASE)
+        if match:
+            groups = match.groups()
+            
+            # Format: DD-MMM-YYYY or DD MMM YYYY
+            if len(groups) == 3 and len(groups[1]) == 3 and groups[1].lower() in month_map:
+                day = groups[0].zfill(2)
+                month = month_map[groups[1].lower()]
+                year = groups[2]
+                return f"{year}-{month}-{day}"
+            
+            # Format: MMM-DD-YYYY or MMM DD YYYY
+            elif len(groups) == 3 and len(groups[0]) == 3 and groups[0].lower() in month_map:
+                day = groups[1].zfill(2)
+                month = month_map[groups[0].lower()]
+                year = groups[2]
+                return f"{year}-{month}-{day}"
+            
+            # Format: DD.MM.YYYY or DD/MM/YYYY
+            elif len(groups) == 3 and len(groups[0]) <= 2 and len(groups[1]) <= 2:
+                day = groups[0].zfill(2)
+                month = groups[1].zfill(2)
+                year = groups[2]
+                return f"{year}-{month}-{day}"
+            
+            # Format: YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD
+            elif len(groups) == 3 and len(groups[0]) == 4:
+                year = groups[0]
+                month = groups[1].zfill(2)
+                day = groups[2].zfill(2)
+                return f"{year}-{month}-{day}"
+    
+    # If no pattern matched, try parsing with datetime
+    try:
+        # Try various formats
+        for fmt in ["%d-%b-%Y", "%d %b %Y", "%b-%d-%Y", "%b %d %Y", 
+                    "%d.%m.%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y.%m.%d", "%Y/%m/%d"]:
+            try:
+                date_obj = datetime.strptime(date_str, fmt)
+                return date_obj.strftime("%Y-%m-%d")
+            except ValueError:
+                continue
+    except Exception:
+        # If all parsing attempts fail, return the original string
+        pass
+    
+    return date_str
 
 def extract_passport_data(image_path):
     """Extract key-value pairs from passport image using OpenAI's vision model"""
@@ -77,6 +153,17 @@ def extract_passport_data(image_path):
         if json_start >= 0 and json_end > json_start:
             json_str = result_text[json_start:json_end]
             parsed_data = json.loads(json_str)
+            
+            # Convert date formats for Issue_date and Expiry_date
+            if 'Issue_date' in parsed_data and parsed_data['Issue_date']:
+                parsed_data['Issue_date'] = convert_date_format(parsed_data['Issue_date'])
+            
+            if 'Expiry_date' in parsed_data and parsed_data['Expiry_date']:
+                parsed_data['Expiry_date'] = convert_date_format(parsed_data['Expiry_date'])
+                
+            if 'Birth_date' in parsed_data and parsed_data['Birth_date']:
+                parsed_data['Birth_date'] = convert_date_format(parsed_data['Birth_date'])
+            
             return parsed_data
         else:
             return {"error": "Failed to extract JSON from response", "raw_response": result_text}
