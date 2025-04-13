@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Results | Document Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html, body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-size: 16px;
+            font-family: 'Source Sans Pro', sans-serif;
+            background-color: #f0f2f5;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header-wrapper {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #012a4a 0%, #013a63 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            height: 50px;
+            border-bottom: 2px solid #ffc107;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        header h1 {
+            font-size: 1.3rem;
+            margin: 0;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .result-status-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .status-accept {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .status-reject {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .header-btn {
+            padding: 0.25rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-block;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .header-btn:hover {
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        .header-btn i {
+            margin-right: 0.3rem;
+        }
+        
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f0f3f8 0%, #e5eaf2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .result-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            background: #fff;
+            position: relative;
+            border-top: 8px solid #e74c3c;
+        }
+        
+        .result-icon i {
+            color: #e74c3c;
+            filter: drop-shadow(0 4px 6px rgba(231, 76, 60, 0.3));
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .result-status {
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+            font-weight: 800;
+            color: #e74c3c;
+        }
+        
+        .inconsistency-list {
+            width: 100%;
+            max-width: 1200px;
+            list-style-type: none;
+            padding: 0;
+            margin: 0 auto 2rem auto;
+        }
+        
+        .inconsistency-item {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #e74c3c;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .inconsistency-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+            background-color: rgba(255, 193, 7, 0.05);
+        }
+        
+        .inconsistency-item i {
+            color: #e74c3c;
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+        }
+        
+        .inconsistency-content {
+            flex: 1;
+        }
+        
+        .inconsistency-type {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .inconsistency-detail {
+            color: #34495e;
+            font-size: 0.95rem;
+        }
+        
+        .action-buttons {
+            display: none;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            display: inline-block;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        
+        /* Document display styling */
+        .documents-container {
+            display: flex;
+            width: 100%;
+            gap: 1rem;
+            margin: 0 auto 1rem auto;
+            height: calc(100% - 2rem);
+        }
+        
+        .document-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex: 1;
+            min-width: 0; /* Prevent flex items from overflowing */
+        }
+        
+        .document-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 3px solid #ffc107;
+        }
+        
+        .document-content {
+            flex: 1;
+            padding: 0.5rem;
+            position: relative;
+            overflow: auto;
+        }
+        
+        .text-document {
+            white-space: pre-wrap;
+            font-family: 'Roboto Mono', monospace;
+            padding: 1rem;
+            line-height: 1.5;
+        }
+        
+        .image-document {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .highlight {
+            background-color: rgba(231, 76, 60, 0.3);
+            border-bottom: 2px solid #e74c3c;
+            padding: 2px;
+            border-radius: 2px;
+        }
+        
+        .pdf-object {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .profile-content {
+            padding: 1rem;
+            font-family: 'Source Sans Pro', sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* Formatted document styling */
+        .formatted-document {
+            padding: 2rem;
+            font-family: 'Source Sans Pro', sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #fff;
+        }
+        
+        .doc-heading {
+            position: relative;
+            margin: 2rem 0 1.5rem 0;
+            padding: 1rem 1.5rem;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #eee;
+            color: #1a5276;
+            font-weight: 600;
+            background-color: #f8fbfd;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .doc-heading:first-child {
+            margin-top: 0;
+        }
+        
+        .doc-heading::before {
+            content: '\f07c';
+            font-family: 'Font Awesome 5 Free';
+            margin-right: 12px;
+            font-size: 1.1rem;
+            color: #3498db;
+        }
+        
+        .doc-heading::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 2px;
+            background-color: #3498db;
+        }
+        
+        .doc-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .doc-field {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .doc-field:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .doc-field-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #2980b9;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px dashed #e0e0e0;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .doc-field-name::before {
+            content: '\f14b';
+            font-family: 'Font Awesome 5 Free';
+            margin-right: 8px;
+            font-size: 0.9rem;
+            color: #3498db;
+            opacity: 0.8;
+        }
+        
+        .doc-field-value {
+            font-size: 1.1rem;
+            padding: 0.5rem;
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+        
+        .doc-field[data-field-name*="date"] .doc-field-name::before,
+        .doc-field[data-field-name*="birth"] .doc-field-name::before {
+            content: '\f073'; /* Calendar icon */
+        }
+        
+        .doc-field[data-field-name*="name"] .doc-field-name::before {
+            content: '\f007'; /* User icon */
+        }
+        
+        .doc-field[data-field-name*="email"] .doc-field-name::before {
+            content: '\f0e0'; /* Email icon */
+        }
+        
+        .doc-field[data-field-name*="phone"] .doc-field-name::before {
+            content: '\f095'; /* Phone icon */
+        }
+        
+        .doc-field[data-field-name*="address"] .doc-field-name::before {
+            content: '\f3c5'; /* Map marker icon */
+        }
+        
+        .doc-field[data-field-name*="passport"] .doc-field-name::before,
+        .doc-field[data-field-name*="document"] .doc-field-name::before,
+        .doc-field[data-field-name*="id"] .doc-field-name::before {
+            content: '\f2c2'; /* ID card icon */
+        }
+        
+        .doc-paragraph {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+            line-height: 1.8;
+            color: #34495e;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #7f8c8d;
+        }
+        
+        .doc-paragraph::before {
+            content: '\f15c';
+            font-family: 'Font Awesome 5 Free';
+            margin-right: 10px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            opacity: 0.7;
+        }
+        
+        /* Style for highlighted fields */
+        .doc-field.highlight {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .doc-field-value.highlight {
+            background-color: rgba(231, 76, 60, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+            70% { box-shadow: 0 0 0 5px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        /* Section dividers */
+        .doc-section {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .doc-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        /* Media query to convert to single column on mobile */
+        @media (max-width: 1200px) {
+            .documents-container {
+                flex-direction: column;
+            }
+            
+            .document-card {
+                height: 500px;
+                flex: none;
+            }
+        }
+        
+        /* Field grid styling */
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Style for highlighted fields - animation only defined once */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.6); }
+            70% { box-shadow: 0 0 10px 0 rgba(255, 0, 0, 0.8); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.6); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header-wrapper {
+                padding: 0.4rem 0.75rem;
+                height: 45px;
+            }
+            
+            header h1 {
+                font-size: 1.1rem;
+            }
+            
+            .result-status-header {
+                font-size: 1rem;
+                padding: 0.2rem 1rem;
+            }
+            
+            .header-btn {
+                font-size: 0.9rem;
+                padding: 0.2rem 1rem;
+            }
+            
+            .header-btn i {
+                margin-right: 0.2rem;
+            }
+            
+            .documents-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .document-card {
+                height: 400px;
+                flex: none;
+            }
+            
+            .content-area {
+                padding: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-wrapper {
+                height: 40px;
+            }
+            
+            header h1 {
+                font-size: 0.9rem;
+            }
+            
+            .header-actions {
+                gap: 0.5rem;
+            }
+            
+            .result-status-header {
+                font-size: 0.85rem;
+                padding: 0.15rem 0.8rem;
+            }
+            
+            .header-btn {
+                font-size: 0.8rem;
+                padding: 0.15rem 0.8rem;
+            }
+            
+            .documents-container {
+                gap: 0.75rem;
+            }
+            
+            .document-card {
+                height: 300px;
+            }
+            
+            .content-area {
+                padding: 0.5rem;
+            }
+        }
+        
+        /* Animation for pulsing effect on highlighted fields */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.6); }
+            50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.6); }
+        }
+        
+        /* Additional styling for highlighting inconsistencies */
+        .doc-field.inconsistent {
+            background-color: rgba(255, 0, 0, 0.15) !important;
+            border-left: 4px solid #FF0000 !important;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6) !important;
+            animation: pulse 2s infinite !important;
+        }
+        
+        .doc-field.inconsistent .doc-field-name {
+            color: #FF0000 !important;
+            font-weight: bold !important;
+        }
+        
+        .doc-field.inconsistent .doc-field-value {
+            background-color: rgba(255, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 0, 0, 0.5) !important;
+            color: #FF0000 !important;
+            font-weight: bold !important;
+            padding: 5px !important;
+            border-radius: 4px !important;
+        }
+    </style>
+</head>
+<body {% if result == 'Reject' %}onload="scrollProfileEmail()"{% endif %}>
+    <div class="container">
+        <div class="header-wrapper">
+            <header>
+                <h1>Verification Results</h1>
+                <div class="header-actions">
+                    {% if result == 'Reject' %}
+                    <div class="result-status-header status-reject">
+                        <i class="fas fa-times-circle"></i> {{ result }}
+                    </div>
+                    {% else %}
+                    <div class="result-status-header status-accept">
+                        <i class="fas fa-check-circle"></i> {{ result }}
+                    </div>
+                    {% endif %}
+                </div>
+            </header>
+            <a href="{{ url_for('index') }}" class="header-btn">
+                <i class="fas fa-user-plus"></i> Next Client
+            </a>
+        </div>
+
+        <div class="content-area">
+            <div class="documents-container">
+                <!-- Profile Document (Left side) -->
+                <div class="document-card">
+                    <div class="document-header">
+                        <i class="fas fa-id-card"></i> Profile Document
+                        <a href="{{ url_for('static', filename='uploads/profile.docx') }}" download style="margin-left: auto; color: white; text-decoration: none;">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                    <div class="document-content" id="profile-container">
+                        {% if profile_data %}
+                            <div class="formatted-document">
+                                <!-- Personal Information Section -->
+                                <div class="doc-section">
+                                    <h3 class="doc-heading">Personal Information</h3>
+                                    <div class="doc-fields-grid">
+                                        {% for key, value in profile_data.items() %}
+                                            {% if key in ['name', 'first_name', 'last_name', 'full_name', 'birth_date', 'date_of_birth', 'gender', 'age', 'nationality', 'citizenship'] %}
+                                                <div class="doc-field" data-field-name="{{ key }}">
+                                                    <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                                    <div class="doc-field-value">{{ value }}</div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Contact Information Section -->
+                                <div class="doc-section">
+                                    <h3 class="doc-heading">Contact Information</h3>
+                                    <div class="doc-fields-grid" id="profile-email-container">
+                                        {% for key, value in profile_data.items() %}
+                                            {% if key in ['email', 'phone', 'address', 'street', 'city', 'state', 'zip', 'postal_code', 'country', 'mobile'] %}
+                                                <div class="doc-field" data-field-name="{{ key }}">
+                                                    <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                                    <div class="doc-field-value">{{ value }}</div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Document Information Section -->
+                                <div class="doc-section">
+                                    <h3 class="doc-heading">Document Information</h3>
+                                    <div class="doc-fields-grid">
+                                        {% for key, value in profile_data.items() %}
+                                            {% if key in ['passport_number', 'passport_issue_date', 'passport_expiry', 'document_number', 'id_number', 'document_type'] %}
+                                                <div class="doc-field" data-field-name="{{ key }}">
+                                                    <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                                    <div class="doc-field-value">{{ value }}</div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Other Information Section -->
+                                <div class="doc-section">
+                                    <h3 class="doc-heading">Additional Information</h3>
+                                    <div class="doc-fields-grid">
+                                        {% for key, value in profile_data.items() %}
+                                            {% if key not in ['name', 'first_name', 'last_name', 'full_name', 'birth_date', 'date_of_birth', 'gender', 'age', 'nationality', 'citizenship', 'email', 'phone', 'address', 'street', 'city', 'state', 'zip', 'postal_code', 'country', 'mobile', 'passport_number', 'passport_issue_date', 'passport_expiry', 'document_number', 'id_number', 'document_type'] %}
+                                                <div class="doc-field" data-field-name="{{ key }}">
+                                                    <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                                    <div class="doc-field-value">{{ value }}</div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="profile-content">
+                                <p>No profile data available. Please download the file to view.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Account Document (Center) -->
+                <div class="document-card">
+                    <div class="document-header">
+                        <i class="fas fa-file-invoice"></i> Account Form
+                        <a href="{{ url_for('static', filename='uploads/account_form.pdf') }}" download style="margin-left: auto; color: white; text-decoration: none;">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                    <div class="document-content">
+                        <!-- Replace hardcoded fields with dynamically populated data -->
+                        <div class="formatted-document">
+                            <!-- Personal Information Section -->
+                            <div class="doc-section">
+                                <h3 class="doc-heading">Personal Information</h3>
+                                <div class="doc-fields-grid">
+                                    {% for key, value in account_opening_pdf_json.items() if key in ['name', 'first_name', 'last_name', 'full_name', 'birth_date', 'date_of_birth', 'gender', 'age', 'nationality', 'citizenship'] %}
+                                        <div class="doc-field" data-field-name="{{ key }}">
+                                            <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                            <div class="doc-field-value">{{ value }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Contact Information Section -->
+                            <div class="doc-section">
+                                <h3 class="doc-heading">Contact Information</h3>
+                                <div class="doc-fields-grid">
+                                    {% for key, value in account_opening_pdf_json.items() if key in ['email', 'phone', 'mobile', 'telephone', 'phone_number', 'mobile_number'] %}
+                                        <div class="doc-field" data-field-name="{{ key }}">
+                                            <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                            <div class="doc-field-value">{{ value }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Address Information Section -->
+                            <div class="doc-section">
+                                <h3 class="doc-heading">Address Information</h3>
+                                <div class="doc-fields-grid">
+                                    {% for key, value in account_opening_pdf_json.items() if key in ['address', 'street', 'building_number', 'postal_code', 'zip', 'city', 'state', 'country', 'residence'] %}
+                                        <div class="doc-field" data-field-name="{{ key }}">
+                                            <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                            <div class="doc-field-value">{{ value }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Other Information Section -->
+                            <div class="doc-section">
+                                <h3 class="doc-heading">Additional Information</h3>
+                                <div class="doc-fields-grid">
+                                    {% for key, value in account_opening_pdf_json.items() if key not in ['name', 'first_name', 'last_name', 'full_name', 'birth_date', 'date_of_birth', 'gender', 'age', 'nationality', 'citizenship', 'email', 'phone', 'mobile', 'telephone', 'phone_number', 'mobile_number', 'address', 'street', 'building_number', 'postal_code', 'zip', 'city', 'state', 'country', 'residence'] %}
+                                        <div class="doc-field" data-field-name="{{ key }}">
+                                            <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                            <div class="doc-field-value">{{ value }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Passport Document (Right side) -->
+                <div class="document-card">
+                    <div class="document-header">
+                        <i class="fas fa-passport"></i> Passport 
+                        <a href="{{ url_for('static', filename='uploads/passport.png') }}" download style="margin-left: auto; color: white; text-decoration: none;">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                    <div class="document-content">
+                        <div class="formatted-document">
+                            <!-- Personal Information Section -->
+                            <div class="doc-section">
+                                <h3 class="doc-heading">Passport Information</h3>
+                                <div class="doc-fields-grid">
+                                    {% for key, value in passport_json.items() %}
+                                        <div class="doc-field" data-field-name="{{ key }}">
+                                            <div class="doc-field-name">{{ key|replace('_', ' ')|title }}</div>
+                                            <div class="doc-field-value">{{ value }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Passport Image -->
+                            <div class="doc-section">
+                                <h3 class="doc-heading">Passport Image</h3>
+                                <div style="text-align: center;">
+                                    <img src="{{ url_for('static', filename='uploads/passport.png') }}" 
+                                         alt="Passport" 
+                                         style="max-width: 100%; max-height: 300px; border: 1px solid #ddd; border-radius: 4px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if result == 'Reject' %}
+    <script>
+        // GUARANTEED APPROACH: Use DOM onload events and direct scrolling
+        window.onload = function() {
+            console.log("Window.onload - Initiating scrolling and highlighting");
+            setTimeout(processInconsistencyData, 500);
+        };
+
+        function processInconsistencyData() {
+            console.log("Processing inconsistency data");
+            try {
+                // Parse the template data into JSON
+                var inconsistencies = JSON.parse('{{ detailed_inconsistencies|tojson|safe }}');
+                console.log("Found inconsistencies:", inconsistencies.length);
+                
+                if (inconsistencies && inconsistencies.length > 0) {
+                    // Process each inconsistency
+                    inconsistencies.forEach(function(item) {
+                        console.log("Processing inconsistency item:", item);
+                        
+                        // Make sure we have the required data
+                        if (!item.profile_field) {
+                            console.log("Missing profile_field in inconsistency item");
+                            return;
+                        }
+                        
+                        // For email fields
+                        if (item.profile_field.toLowerCase().includes('email')) {
+                            processEmailInconsistency(item);
+                        } else {
+                            // For other fields
+                            processGeneralInconsistency(item);
+                        }
+                    });
+                } else {
+                    console.log("No inconsistencies found");
+                }
+                
+                // Check if any fields were highlighted
+                if (document.querySelectorAll('.doc-field.inconsistent').length === 0) {
+                    console.log("No fields were highlighted, forcing email highlighting");
+                    forceHighlightEmail();
+                }
+                
+                // Scroll to the containers after highlighting
+                setTimeout(scrollToHighlightedFields, 1000);
+            } catch (e) {
+                console.error("Error processing inconsistency data:", e);
+                // Fallback - force highlight emails
+                forceHighlightEmail();
+            }
+        }
+        
+        function processEmailInconsistency(item) {
+            console.log("Processing email inconsistency:", item.profile_field, item.profile_value);
+            
+            // First try exact match by data attribute
+            var emailFields = document.querySelectorAll('.doc-field[data-field-name="email"]');
+            if (emailFields.length === 0) {
+                // Try with contains
+                emailFields = document.querySelectorAll('.doc-field[data-field-name*="email"]');
+            }
+            
+            if (emailFields.length > 0) {
+                console.log("Found", emailFields.length, "email fields");
+                emailFields.forEach(function(field) {
+                    const valueElem = field.querySelector('.doc-field-value');
+                    if (valueElem && valueElem.textContent.trim() === item.profile_value) {
+                        console.log("Found exact email match:", valueElem.textContent.trim());
+                        field.classList.add('inconsistent');
+                    } else {
+                        // If we can't find an exact match, highlight all email fields
+                        field.classList.add('inconsistent');
+                    }
+                });
+            } else {
+                console.log("No email fields found");
+            }
+        }
+        
+        function processGeneralInconsistency(item) {
+            console.log("Processing general inconsistency:", item.profile_field);
+            
+            // Try different selectors to find the field
+            var fieldSelectors = [
+                `.doc-field[data-field-name="${item.profile_field.toLowerCase()}"]`,
+                `.doc-field[data-field-name*="${item.profile_field.toLowerCase()}"]`
+            ];
+            
+            var fieldFound = false;
+            
+            // Try each selector
+            for (const selector of fieldSelectors) {
+                const fields = document.querySelectorAll(selector);
+                if (fields.length > 0) {
+                    console.log("Found fields with selector:", selector, fields.length);
+                    fields.forEach(field => {
+                        field.classList.add('inconsistent');
+                        fieldFound = true;
+                    });
+                    break;
+                }
+            }
+            
+            // If we couldn't find the field, try matching by value
+            if (!fieldFound && item.profile_value) {
+                const allFields = document.querySelectorAll('.doc-field');
+                allFields.forEach(field => {
+                    const valueElem = field.querySelector('.doc-field-value');
+                    if (valueElem && valueElem.textContent.trim() === item.profile_value) {
+                        console.log("Found field by value match:", item.profile_value);
+                        field.classList.add('inconsistent');
+                        fieldFound = true;
+                    }
+                });
+            }
+        }
+        
+        function forceHighlightEmail() {
+            console.log("Force highlighting email fields");
+            const emailFields = document.querySelectorAll('.doc-field[data-field-name*="email"]');
+            if (emailFields.length > 0) {
+                emailFields.forEach(field => {
+                    field.classList.add('inconsistent');
+                });
+            } else {
+                // Last resort - highlight first field in each document
+                console.log("No email fields found, highlighting first field in each document");
+                document.querySelectorAll('.document-card').forEach(card => {
+                    const firstField = card.querySelector('.doc-field');
+                    if (firstField) {
+                        firstField.classList.add('inconsistent');
+                    }
+                });
+            }
+        }
+        
+        function scrollToHighlightedFields() {
+            console.log("Scrolling to highlighted fields");
+            
+            // Find all documents
+            const documents = document.querySelectorAll('.document-card');
+            
+            // For each document, scroll to the first highlighted field
+            documents.forEach((doc, index) => {
+                const highlightedField = doc.querySelector('.doc-field.inconsistent');
+                const docContainer = doc.querySelector('.document-content');
+                
+                if (highlightedField && docContainer) {
+                    // Get the position of the highlighted field
+                    const fieldRect = highlightedField.getBoundingClientRect();
+                    const containerRect = docContainer.getBoundingClientRect();
+                    
+                    // Calculate the scroll position
+                    const scrollPosition = highlightedField.offsetTop - containerRect.height / 2;
+                    
+                    // Scroll the container
+                    docContainer.scrollTop = Math.max(0, scrollPosition);
+                    console.log(`Scrolled document ${index + 1} to position:`, scrollPosition);
+                } else {
+                    // If no highlighted field, use default positions
+                    if (docContainer) {
+                        if (index === 0) { // Profile document
+                            docContainer.scrollTop = 300;
+                        } else if (index === 1) { // Account document
+                            docContainer.scrollTop = 230;
+                        } else if (index === 2) { // Passport document
+                            docContainer.scrollTop = 100;
+                        }
+                        console.log(`Scrolled document ${index + 1} to default position`);
+                    }
+                }
+            });
+        }
+    </script>
+    {% endif %}
+</body>
+</html> 
